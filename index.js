@@ -21,10 +21,10 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 client.connect(err => {
   const collection = client.db("ePlanetShop").collection("eproducts");
+  const orderCollection = client.db("ePlanetUser").collection("orders");
     // add product
     app.post('/addProduct', (req, res) => {
       const newProduct = req.body;
-      // console.log(newProduct);
       collection.insertOne(newProduct)
       .then(result => {
           res.send(result.insertedCount > 0);
@@ -45,6 +45,35 @@ client.connect(err => {
         .then(result => {
           res.send(result.deletedCount > 0);
         })
+    })
+
+    // single product fetch
+    app.get('/product/:id',(req, res) => {
+      collection.find({ _id: ObjectId(req.params.id) })
+      .toArray((err, document) => {
+        res.send(document[0])
+      })
+    })
+
+    // order save into database
+    app.post('/addOrder', (req, res) => {
+      const newOrder = req.body;
+      console.log(newOrder)
+      orderCollection.insertOne(newOrder)
+      .then(result => {
+          console.log(result.insertedCount)
+          res.send(result.insertedCount > 0);
+      })
+    })
+
+
+    // find total order of a user
+    app.get('/orderList',(req, res) => {
+      console.log(req.query.email)
+      orderCollection.find({ email: req.query.email })
+      .toArray((err, document) => {
+        res.send(document)
+      })
     })
 
 
